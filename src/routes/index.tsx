@@ -1,31 +1,48 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Activity, Brain, Circle, Flame, Target, TrendingUp, Zap } from "lucide-react";
+import { Activity, Crown, Shield, Target, TrendingUp, User, Clock, Mic } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "NEXUS AI — Análise Probabilística do Double Blaze" },
-      { name: "description", content: "Plataforma de análise em tempo real do Double da Blaze com inteligência artificial e probabilidades avançadas." },
+      { title: "Mestre do Branco — Inteligência Artificial Double Blaze" },
+      { name: "description", content: "Painel de inteligência artificial para análise probabilística do Double da Blaze em tempo real." },
     ],
   }),
 });
 
-type Color = "red" | "black" | "white";
+type Slot = { n: number; c: "red" | "black" | "white" };
 
-const COLORS: Color[] = ["red", "black", "red", "black", "white", "red", "black", "red", "red", "black", "white", "red"];
+function randomSlot(): Slot {
+  const r = Math.random();
+  if (r < 0.07) return { n: 0, c: "white" };
+  if (r < 0.535) return { n: 1 + Math.floor(Math.random() * 7), c: "red" };
+  return { n: 8 + Math.floor(Math.random() * 7), c: "black" };
+}
 
-function colorClass(c: Color) {
-  if (c === "red") return "bg-gradient-to-br from-[oklch(0.62_0.26_25)] to-[oklch(0.42_0.2_25)] text-white shadow-[0_0_15px_oklch(0.62_0.26_25/0.7)]";
-  if (c === "black") return "bg-gradient-to-br from-[oklch(0.25_0.02_20)] to-[oklch(0.1_0.01_20)] text-white border border-white/10";
-  return "bg-gradient-to-br from-white to-zinc-300 text-black shadow-[0_0_15px_oklch(1_0_0/0.4)]";
+const INITIAL: Slot[] = Array.from({ length: 12 }, () => randomSlot());
+
+function slotClass(c: Slot["c"]) {
+  if (c === "red") return "bg-gradient-to-br from-[oklch(0.62_0.26_25)] to-[oklch(0.38_0.2_25)] text-white shadow-[0_0_18px_oklch(0.62_0.26_25/0.7)]";
+  if (c === "black") return "bg-gradient-to-br from-[oklch(0.28_0.02_20)] to-[oklch(0.1_0.01_20)] text-white border border-white/10";
+  return "bg-gradient-to-br from-white to-zinc-300 text-black shadow-[0_0_18px_oklch(1_0_0/0.45)]";
+}
+
+function useClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  return now.toLocaleTimeString("pt-BR", { hour12: false });
 }
 
 function Index() {
-  const [results, setResults] = useState<Color[]>(COLORS);
+  const [results, setResults] = useState<Slot[]>(INITIAL);
   const [progress, setProgress] = useState(0);
   const [tick, setTick] = useState(0);
+  const time = useClock();
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -37,145 +54,209 @@ function Index() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      const next: Color = Math.random() < 0.05 ? "white" : Math.random() < 0.5 ? "red" : "black";
-      setResults((r) => [next, ...r].slice(0, 14));
+      setResults((r) => [randomSlot(), ...r].slice(0, 12));
     }, 4500);
     return () => clearInterval(id);
   }, []);
 
   const stats = useMemo(() => {
-    const reds = results.filter((c) => c === "red").length;
-    const blacks = results.filter((c) => c === "black").length;
-    const whites = results.filter((c) => c === "white").length;
-    const best: Color = reds >= blacks ? "red" : "black";
-    const accuracy = 78 + ((tick % 18) - 9) * 0.4;
-    return { reds, blacks, whites, best, accuracy: accuracy.toFixed(1) };
+    const reds = results.filter((s) => s.c === "red").length;
+    const blacks = results.filter((s) => s.c === "black").length;
+    const whites = results.filter((s) => s.c === "white").length;
+    const total = results.length;
+    const best: Slot["c"] = reds >= blacks ? "red" : "black";
+    const acc = (Math.max(reds, blacks) / total) * 100 + ((tick % 10) - 5) * 0.1;
+    return {
+      reds,
+      blacks,
+      whites,
+      total,
+      best,
+      accuracy: acc.toFixed(1),
+      pRed: ((reds / total) * 100).toFixed(1),
+      pBlack: ((blacks / total) * 100).toFixed(1),
+      pWhite: ((whites / total) * 100).toFixed(1),
+    };
   }, [results, tick]);
 
+  const showcase = results.slice(0, 3);
+
   return (
-    <main className="min-h-screen px-4 py-6 md:px-8 md:py-10">
-      <div className="mx-auto max-w-6xl">
-        {/* HEADER */}
-        <header className="panel flex flex-col items-center justify-between gap-4 px-5 py-4 sm:flex-row">
+    <main className="min-h-screen px-3 py-4 md:px-6 md:py-6">
+      <div className="mx-auto max-w-6xl space-y-4">
+        {/* TOP BAR */}
+        <header className="panel flex flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="relative grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-primary to-[oklch(0.4_0.2_25)] glow-red">
-              <Brain className="h-6 w-6 text-white" />
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-gradient-to-br from-primary to-[oklch(0.4_0.2_25)] glow-red">
+              <Crown className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-wider text-white">
-                NEXUS<span className="text-primary"> AI</span>
+              <h1 className="text-base font-extrabold tracking-[0.18em] text-white sm:text-lg">
+                MESTRE DO <span className="text-primary">BRANCO</span>
               </h1>
-              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Blaze Double Predictor</p>
+              <p className="text-[10px] uppercase tracking-[0.32em] text-muted-foreground">Inteligência Artificial</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-[oklch(0.72_0.2_145/0.4)] bg-[oklch(0.2_0.05_145/0.2)] px-4 py-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-success" />
-            </span>
-            <span className="text-xs font-bold uppercase tracking-widest text-success">Online</span>
+          <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-1.5 rounded-full border border-[oklch(0.72_0.2_145/0.4)] bg-[oklch(0.2_0.05_145/0.2)] px-3 py-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              <span className="font-bold uppercase tracking-widest text-success">Online</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-card/60 px-3 py-1.5 text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 text-primary" />
+              <span className="font-mono">{time}</span>
+            </div>
+            <div className="hidden items-center gap-1.5 rounded-full border border-primary/30 bg-card/60 px-3 py-1.5 text-muted-foreground sm:flex">
+              <User className="h-3.5 w-3.5 text-primary" />
+              <span className="font-bold uppercase tracking-widest">Admin</span>
+            </div>
           </div>
         </header>
 
-        {/* CENTRAL ANALYZING */}
-        <section className="panel mt-6 flex flex-col items-center gap-6 px-6 py-10 text-center">
-          <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">Inteligência Artificial em operação</p>
+        {/* MAIN ROW: STRATEGY | ANALYZING | STATUS */}
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_2fr_1fr]">
+          <div className="panel flex items-center gap-3 px-4 py-4">
+            <div className="grid h-9 w-9 place-items-center rounded-md border border-primary/40 bg-card text-primary">
+              <Shield className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Estratégia</p>
+              <p className="text-sm font-extrabold uppercase tracking-wider text-white">Não Utilizar Gale</p>
+            </div>
+          </div>
+
           <button
             type="button"
-            className="group relative overflow-hidden rounded-full bg-gradient-to-br from-[oklch(0.62_0.26_25)] to-[oklch(0.4_0.22_25)] px-10 py-6 text-lg font-extrabold uppercase tracking-[0.35em] text-white animate-pulse-glow transition-transform hover:scale-105 sm:px-16 sm:text-2xl"
+            className="panel group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[oklch(0.62_0.26_25)] to-[oklch(0.38_0.22_25)] px-6 py-5 text-center animate-pulse-glow transition-transform hover:scale-[1.02]"
           >
-            <span className="relative z-10 flex items-center gap-3">
-              <Zap className="h-6 w-6" />
+            <span className="relative z-10 flex items-center justify-center gap-3 text-xl font-extrabold uppercase tracking-[0.35em] text-white sm:text-2xl">
+              <Mic className="h-5 w-5" />
               Analisando...
             </span>
-            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover:animate-progress" />
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:animate-progress" />
           </button>
 
-          {/* PROGRESS */}
-          <div className="w-full max-w-2xl">
-            <div className="mb-2 flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
-              <span>Processando padrões</span>
-              <span className="text-primary">{progress}%</span>
+          <div className="panel flex items-center gap-3 px-4 py-4">
+            <div className="grid h-9 w-9 place-items-center rounded-md border border-primary/40 bg-card text-primary">
+              <Activity className="h-4 w-4" />
             </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Status</p>
+              <p className="text-sm font-extrabold uppercase tracking-wider text-primary">Analisando</p>
+            </div>
+          </div>
+        </section>
+
+        {/* RESULT SHOWCASE + PROGRESS */}
+        <section className="panel px-5 py-6">
+          <div className="flex items-center justify-center gap-4 sm:gap-6">
+            {showcase.map((s, i) => (
+              <div
+                key={`${i}-${s.n}-${s.c}`}
+                className={`grid place-items-center rounded-full text-2xl font-extrabold transition-all sm:text-3xl ${slotClass(s.c)} ${i === 0 ? "h-20 w-20 ring-2 ring-primary ring-offset-4 ring-offset-background sm:h-24 sm:w-24" : "h-14 w-14 opacity-80 sm:h-16 sm:w-16"}`}
+                style={{ animation: i === 0 ? "fade-in 0.6s ease-out" : undefined }}
+              >
+                {s.n}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6">
             <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-[oklch(0.2_0.02_20)] border border-primary/20">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-[oklch(0.45_0.22_25)] via-[oklch(0.7_0.28_25)] to-[oklch(0.45_0.22_25)] shadow-[0_0_15px_oklch(0.62_0.26_25/0.8)] transition-[width] duration-100"
                 style={{ width: `${progress}%` }}
               />
             </div>
+            <p className="mt-3 text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              <span className="text-primary">◆</span> Verificando entrada ideal... <span className="text-primary">{progress}%</span>
+            </p>
           </div>
         </section>
 
-        {/* RESULTS */}
-        <section className="panel mt-6 px-5 py-6">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-bold uppercase tracking-widest text-white">Últimos Resultados</h2>
+        {/* BOTTOM STATS */}
+        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* COR MAIS INDICADA */}
+          <div className="panel px-5 py-5">
+            <div className="flex items-center gap-2 text-primary">
+              <Target className="h-4 w-4" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Cor Mais Indicada</span>
             </div>
-            <span className="text-xs text-muted-foreground">Tempo real</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-            {results.map((c, i) => (
-              <div
-                key={`${i}-${c}`}
-                className={`grid h-11 w-11 place-items-center rounded-full text-sm font-bold transition-all sm:h-12 sm:w-12 ${colorClass(c)} ${i === 0 ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110" : ""}`}
-                style={{ animation: i === 0 ? "fade-in 0.6s ease-out" : undefined }}
-              >
-                {c === "white" ? "★" : ""}
+            <div className="mt-4 flex items-center gap-4">
+              <div className={`grid h-14 w-14 place-items-center rounded-full text-lg font-extrabold ${slotClass(stats.best)}`}>
+                {stats.best === "red" ? "R" : "P"}
               </div>
-            ))}
+              <div>
+                <div className="text-3xl font-extrabold text-white">{stats.accuracy}%</div>
+                <div className="text-xs font-bold uppercase tracking-[0.25em] text-primary">
+                  {stats.best === "red" ? "Vermelho" : "Preto"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CHANCES DA JOGADA */}
+          <div className="panel px-5 py-5">
+            <div className="flex items-center gap-2 text-primary">
+              <TrendingUp className="h-4 w-4" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Chances da Jogada</span>
+            </div>
+            <div className="mt-4 space-y-2.5">
+              {[
+                { label: "Vermelho", val: stats.pRed, c: "red" as const },
+                { label: "Preto", val: stats.pBlack, c: "black" as const },
+                { label: "Branco", val: stats.pWhite, c: "white" as const },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center gap-3">
+                  <div className={`grid h-7 w-7 place-items-center rounded-full text-[11px] font-extrabold ${slotClass(row.c)}`}>
+                    {row.c === "white" ? "0" : row.c === "red" ? "R" : "P"}
+                  </div>
+                  <div className="flex-1">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[oklch(0.2_0.02_20)]">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-[oklch(0.7_0.28_25)] transition-all"
+                        style={{ width: `${row.val}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="w-14 text-right text-sm font-bold text-white">{row.val}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* QUANTIDADE DE VEZES */}
+          <div className="panel px-5 py-5">
+            <div className="flex items-center gap-2 text-primary">
+              <Activity className="h-4 w-4" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Quantidade de Vezes</span>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+              <Mini label="Vermelho" value={stats.reds} c="red" />
+              <Mini label="Preto" value={stats.blacks} c="black" />
+              <Mini label="Branco" value={stats.whites} c="white" />
+            </div>
           </div>
         </section>
 
-        {/* STATS CARDS */}
-        <section className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard
-            icon={<Target className="h-5 w-5" />}
-            label="Cor Indicada"
-            value={
-              <div className="flex items-center gap-2">
-                <Circle className={`h-5 w-5 fill-current ${stats.best === "red" ? "text-primary" : "text-white/80"}`} />
-                <span className="uppercase">{stats.best === "red" ? "Vermelho" : "Preto"}</span>
-              </div>
-            }
-            accent
-          />
-          <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Assertividade" value={`${stats.accuracy}%`} />
-          <StatCard icon={<Flame className="h-5 w-5" />} label="Chance da Jogada" value="ALTA" sub="Padrão confirmado" />
-          <StatCard icon={<Activity className="h-5 w-5" />} label="Quantidade" value={`${stats.reds + stats.blacks + stats.whites}x`} sub="últimas rodadas" />
-        </section>
-
-        <footer className="mt-8 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} NEXUS AI · Análise probabilística para fins de entretenimento.
+        <footer className="pt-2 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+          © {new Date().getFullYear()} Mestre do Branco · Análise probabilística para fins de entretenimento
         </footer>
       </div>
     </main>
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-  sub,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: React.ReactNode;
-  sub?: string;
-  accent?: boolean;
-}) {
+function Mini({ label, value, c }: { label: string; value: number; c: Slot["c"] }) {
   return (
-    <div className={`panel relative overflow-hidden px-5 py-5 ${accent ? "glow-red" : ""}`}>
-      <div className="flex items-center gap-2 text-primary">
-        {icon}
-        <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">{label}</span>
+    <div className="rounded-lg border border-primary/20 bg-card/50 px-2 py-3">
+      <div className={`mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-extrabold ${slotClass(c)}`}>
+        {value}
       </div>
-      <div className="mt-3 text-2xl font-extrabold text-white">{value}</div>
-      {sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}
-      <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
+      <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</div>
     </div>
   );
 }
