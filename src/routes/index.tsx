@@ -46,19 +46,23 @@ function slotClass(c: Slot["c"], size: "xs" | "sm" | "md" | "lg" = "sm") {
       : size === "md"
       ? "h-14 w-14 text-base"
       : "h-24 w-24 text-3xl";
-  return `${base} ${sz} grid place-items-center rounded-full font-extrabold shrink-0`;
+  return `${base} ${sz} grid place-items-center rounded-full font-extrabold shrink-0 select-none`;
 }
 
-function SlotChip({ slot, size = "sm", label, className = "" }: { slot: Slot | null; size?: "xs" | "sm" | "md" | "lg"; label?: React.ReactNode; className?: string }) {
+function SlotChip({
+  slot,
+  size = "sm",
+  label,
+  className = "",
+}: {
+  slot: Slot | null;
+  size?: "xs" | "sm" | "md" | "lg";
+  label?: React.ReactNode;
+  className?: string;
+}) {
   const c: Slot["c"] = slot?.c ?? "black";
   const ringSize =
-    size === "xs"
-      ? "h-4 w-4"
-      : size === "sm"
-      ? "h-6 w-6"
-      : size === "md"
-      ? "h-10 w-10"
-      : "h-16 w-16";
+    size === "xs" ? "h-4 w-4" : size === "sm" ? "h-6 w-6" : size === "md" ? "h-10 w-10" : "h-16 w-16";
   const ringBorder = size === "xs" ? "border" : "border-2";
   const ringColor = c === "white" ? "border-[#e94560]/70" : "border-white/85";
   const crownSize =
@@ -82,7 +86,13 @@ function SlotChip({ slot, size = "sm", label, className = "" }: { slot: Slot | n
             className={`pointer-events-none absolute left-1/2 -translate-x-1/2 ${crownSize} w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] select-none`}
           />
         )}
-        <img src={brancoIcon} alt="" aria-hidden className="h-[78%] w-[78%] object-contain select-none rounded-full" draggable={false} />
+        <img
+          src={brancoIcon}
+          alt=""
+          aria-hidden
+          className="h-[78%] w-[78%] object-contain select-none rounded-full"
+          draggable={false}
+        />
       </div>
     );
   }
@@ -97,8 +107,10 @@ function SlotChip({ slot, size = "sm", label, className = "" }: { slot: Slot | n
           className={`pointer-events-none absolute left-1/2 -translate-x-1/2 ${crownSize} w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] select-none`}
         />
       )}
-      <div className={`${ringSize} ${ringBorder} ${ringColor} rounded-full grid place-items-center leading-none`}>
-        <span>{label !== undefined ? label : (slot?.n ?? "")}</span>
+      <div
+        className={`${ringSize} ${ringBorder} ${ringColor} rounded-full grid place-items-center leading-none`}
+      >
+        <span>{label !== undefined ? label : slot?.n ?? ""}</span>
       </div>
     </div>
   );
@@ -249,8 +261,8 @@ function Index() {
             }}
             className="panel group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[oklch(0.62_0.26_25)] to-[oklch(0.38_0.22_25)] px-6 py-5 text-center animate-pulse-glow transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            <span className="relative z-10 flex items-center justify-center gap-3 text-lg font-extrabold uppercase tracking-[0.32em] text-white sm:text-2xl">
-              <Flame className="h-5 w-5" />
+            <span className="relative z-10 flex items-center justify-center gap-3 text-lg font-extrabold uppercase tracking-[0.32em] text-white sm:text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+              <Flame className="h-5 w-5 fill-white" />
               Analisar
             </span>
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:animate-progress" />
@@ -430,11 +442,13 @@ function Pill({ icon, label, value, valueClass }: { icon: React.ReactNode; label
 
 function Mini({ label, value, c }: { label: string; value: number; c: Slot["c"] }) {
   return (
-    <div className="rounded-lg border border-primary/20 bg-card/50 px-2 py-3">
+    <div className="rounded-lg border border-primary/20 bg-card/50 px-2 py-3 transition-colors hover:bg-card/70">
       <div className="mx-auto flex justify-center">
         <SlotChip slot={{ c, n: value }} size="sm" label={value} />
       </div>
-      <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
     </div>
   );
 }
