@@ -442,11 +442,13 @@ function Pill({ icon, label, value, valueClass }: { icon: React.ReactNode; label
 
 function Mini({ label, value, c }: { label: string; value: number; c: Slot["c"] }) {
   return (
-    <div className="rounded-lg border border-primary/20 bg-card/50 px-2 py-3">
+    <div className="rounded-lg border border-primary/20 bg-card/50 px-2 py-3 transition-colors hover:bg-card/70">
       <div className="mx-auto flex justify-center">
         <SlotChip slot={{ c, n: value }} size="sm" label={value} />
       </div>
-      <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</div>
+      <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
     </div>
   );
 }
