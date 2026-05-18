@@ -261,8 +261,8 @@ function Index() {
             }}
             className="panel group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[oklch(0.62_0.26_25)] to-[oklch(0.38_0.22_25)] px-6 py-5 text-center animate-pulse-glow transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            <span className="relative z-10 flex items-center justify-center gap-3 text-lg font-extrabold uppercase tracking-[0.32em] text-white sm:text-2xl">
-              <Flame className="h-5 w-5" />
+            <span className="relative z-10 flex items-center justify-center gap-3 text-lg font-extrabold uppercase tracking-[0.32em] text-white sm:text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+              <Flame className="h-5 w-5 fill-white" />
               Analisar
             </span>
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:animate-progress" />
