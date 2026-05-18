@@ -46,19 +46,23 @@ function slotClass(c: Slot["c"], size: "xs" | "sm" | "md" | "lg" = "sm") {
       : size === "md"
       ? "h-14 w-14 text-base"
       : "h-24 w-24 text-3xl";
-  return `${base} ${sz} grid place-items-center rounded-full font-extrabold shrink-0`;
+  return `${base} ${sz} grid place-items-center rounded-full font-extrabold shrink-0 select-none`;
 }
 
-function SlotChip({ slot, size = "sm", label, className = "" }: { slot: Slot | null; size?: "xs" | "sm" | "md" | "lg"; label?: React.ReactNode; className?: string }) {
+function SlotChip({
+  slot,
+  size = "sm",
+  label,
+  className = "",
+}: {
+  slot: Slot | null;
+  size?: "xs" | "sm" | "md" | "lg";
+  label?: React.ReactNode;
+  className?: string;
+}) {
   const c: Slot["c"] = slot?.c ?? "black";
   const ringSize =
-    size === "xs"
-      ? "h-4 w-4"
-      : size === "sm"
-      ? "h-6 w-6"
-      : size === "md"
-      ? "h-10 w-10"
-      : "h-16 w-16";
+    size === "xs" ? "h-4 w-4" : size === "sm" ? "h-6 w-6" : size === "md" ? "h-10 w-10" : "h-16 w-16";
   const ringBorder = size === "xs" ? "border" : "border-2";
   const ringColor = c === "white" ? "border-[#e94560]/70" : "border-white/85";
   const crownSize =
@@ -82,7 +86,13 @@ function SlotChip({ slot, size = "sm", label, className = "" }: { slot: Slot | n
             className={`pointer-events-none absolute left-1/2 -translate-x-1/2 ${crownSize} w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] select-none`}
           />
         )}
-        <img src={brancoIcon} alt="" aria-hidden className="h-[78%] w-[78%] object-contain select-none rounded-full" draggable={false} />
+        <img
+          src={brancoIcon}
+          alt=""
+          aria-hidden
+          className="h-[78%] w-[78%] object-contain select-none rounded-full"
+          draggable={false}
+        />
       </div>
     );
   }
@@ -97,8 +107,10 @@ function SlotChip({ slot, size = "sm", label, className = "" }: { slot: Slot | n
           className={`pointer-events-none absolute left-1/2 -translate-x-1/2 ${crownSize} w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] select-none`}
         />
       )}
-      <div className={`${ringSize} ${ringBorder} ${ringColor} rounded-full grid place-items-center leading-none`}>
-        <span>{label !== undefined ? label : (slot?.n ?? "")}</span>
+      <div
+        className={`${ringSize} ${ringBorder} ${ringColor} rounded-full grid place-items-center leading-none`}
+      >
+        <span>{label !== undefined ? label : slot?.n ?? ""}</span>
       </div>
     </div>
   );
