@@ -19,7 +19,7 @@ import { memo, useMemo } from "react";
  * ARCHITECTURAL DECISIONS:
  * 1. Component Memoization: Pure UI components (FeatureCard, PlanCard) are memoized to prevent 
  *    unnecessary re-renders during framer-motion parent updates.
- * 2. Asset Pipeline: Implemented decodimg="async" and loading="lazy" for non-critical images.
+ * 2. Asset Pipeline: Implemented decoding="async" and loading="lazy" for non-critical images.
  * 3. Type Safety: Implicitly leveraging strict types where possible.
  * 4. CSS Grid/Flex: Using the 8pt grid system rigorously for layout precision.
  */
@@ -28,8 +28,8 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "IPTVFELIPEPRO - World-Class Streaming Experience" },
-      { name: "description", content: "The ultimate entertainment hub. 80k+ 4K contents, Anti-freeze technology, 24/7 VIP support." },
+      { title: "IPTVFELIPEPRO - Cinema em Casa com Qualidade 4K" },
+      { name: "description", content: "A melhor experiência de entretenimento. Mais de 80.000 conteúdos em 4K, Anti-freeze e suporte 24h." },
       { property: "og:image", content: "https://images.unsplash.com/photo-1593784991095-a205039470b6?q=80&w=1200" },
     ],
   }),
@@ -114,9 +114,9 @@ function Index() {
   const WHATSAPP_LINK = useMemo(() => "https://wa.me/5500000000000?text=Olá! Quero conhecer os planos de IPTV.", []);
 
   const features = useMemo(() => [
-    { icon: Zap, title: "Anti-Freeze 4.0", desc: "Cutting-edge tech ensuring absolute stability even on fluctuating connections." },
-    { icon: ShieldCheck, title: "Total Security", desc: "Encrypted servers and 24/7 dedicated support for your peace of mind." },
-    { icon: Star, title: "Ultra HD Quality", desc: "Enjoy Full HD and 4K HDR content for a real cinematic experience." }
+    { icon: Zap, title: "Anti-Freeze 4.0", desc: "Tecnologia de ponta para garantir estabilidade absoluta, mesmo em conexões oscilantes." },
+    { icon: ShieldCheck, title: "Segurança Total", desc: "Servidores criptografados e suporte dedicado 24h por dia para sua tranquilidade." },
+    { icon: Star, title: "Qualidade Ultra HD", desc: "Aproveite conteúdos em Full HD e 4K HDR para uma experiência de cinema real." }
   ], []);
 
   const plans = useMemo(() => [
@@ -146,9 +146,9 @@ function Index() {
             <span className="text-xl font-black tracking-tighter uppercase">IPTV<span className="text-primary transition-colors group-hover:text-white">FELIPEPRO</span></span>
           </div>
           <div className="hidden items-center gap-10 text-[13px] font-bold tracking-widest uppercase md:flex">
-            {["beneficios", "catalogo", "planos"].map(id => (
-              <a key={id} href={`#${id}`} className="text-white/50 transition-colors hover:text-white capitalize">{id}</a>
-            ))}
+            <a href="#beneficios" className="text-white/50 transition-colors hover:text-white uppercase">Benefícios</a>
+            <a href="#catalogo" className="text-white/50 transition-colors hover:text-white uppercase">Catálogo</a>
+            <a href="#planos" className="text-white/50 transition-colors hover:text-white uppercase">Planos</a>
             <a href={WHATSAPP_LINK} className="rounded-full bg-primary px-8 py-3 text-white shadow-xl shadow-primary/20 transition-all hover:scale-105 hover:shadow-primary/40 active:scale-95">
               TESTE GRÁTIS
             </a>
@@ -167,7 +167,7 @@ function Index() {
               animate={{ scale: 1, opacity: 0.4 }}
               transition={{ duration: 2, ease: "easeOut" }}
               src="https://images.unsplash.com/photo-1593784991095-a205039470b6?q=80&w=2070&auto=format&fit=crop" 
-              alt="Elite Streaming Dashboard" 
+              alt="Painel de Streaming Elite" 
               className="h-full w-full object-cover"
               decoding="async"
             />
@@ -179,29 +179,29 @@ function Index() {
                 variants={FADE_IN_UP}
                 className="inline-block rounded-full border border-white/10 bg-white/5 px-6 py-2 text-[11px] font-bold tracking-[0.2em] text-primary uppercase mb-8 backdrop-blur-sm"
               >
-                World-Class Entertainment Engine
+                Entretenimento de Elite
               </motion.span>
               <motion.h1 
                 variants={FADE_IN_UP}
                 className="mb-8 text-6xl font-black leading-[1.1] tracking-tighter md:text-8xl lg:text-[100px]"
               >
-                Everything you love, <br />
-                <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/40 bg-clip-text text-transparent">in one place.</span>
+                Tudo o que você ama, <br />
+                <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/40 bg-clip-text text-transparent">em um só lugar.</span>
               </motion.h1>
               <motion.p 
                 variants={FADE_IN_UP}
                 className="mx-auto mb-12 max-w-2xl text-lg text-white/50 leading-relaxed md:text-xl font-medium"
               >
-                Global channels, live sports, latest cinema releases, and complete series. Stable 4K quality with zero buffering.
+                Canais do mundo todo, esportes ao vivo, os últimos lançamentos do cinema e séries completas. Qualidade 4K estável sem travamentos.
               </motion.p>
               <motion.div variants={FADE_IN_UP} className="flex flex-col items-center justify-center gap-5 sm:flex-row">
                 <a href={WHATSAPP_LINK} className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-primary px-10 py-5 text-[15px] font-bold tracking-tight shadow-2xl shadow-primary/30 transition-all hover:scale-105 hover:shadow-primary/50 sm:w-auto active:scale-95">
-                  SUBSCRIBE NOW
+                  ASSINAR AGORA
                   <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </a>
                 <button onClick={() => window.open(WHATSAPP_LINK)} className="flex w-full items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-10 py-5 text-[15px] font-bold transition-all hover:bg-white/10 backdrop-blur-md sm:w-auto active:scale-95">
                   <Play className="h-5 w-5 fill-current" />
-                  FREE TRIAL
+                  TESTE GRÁTIS
                 </button>
               </motion.div>
             </motion.div>
@@ -213,8 +213,8 @@ function Index() {
           <div className="mx-auto max-w-7xl px-6">
             <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
               <div className="max-w-xl">
-                <h2 className="mb-5 text-4xl font-black md:text-6xl uppercase tracking-tighter leading-none">Largest Catalog <br /> in Brazil</h2>
-                <p className="text-white/40 text-lg font-medium">Daily updates. Movies straight from cinema and award-winning series.</p>
+                <h2 className="mb-5 text-4xl font-black md:text-6xl uppercase tracking-tighter leading-none">O Maior Catálogo <br /> do Brasil</h2>
+                <p className="text-white/40 text-lg font-medium">Atualizações diárias. Filmes que acabaram de sair do cinema e séries premiadas.</p>
               </div>
             </div>
 
@@ -234,7 +234,7 @@ function Index() {
                   transition={{ delay: i * 0.1 }}
                   className="aspect-[2/3] overflow-hidden rounded-2xl border border-white/5 bg-white/5"
                 >
-                  <img src={img} alt="Movie Poster" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                  <img src={img} alt="Poster de Filme" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                 </motion.div>
               ))}
             </div>
@@ -256,8 +256,8 @@ function Index() {
         <section id="planos" className="py-32 relative overflow-hidden">
           <div className="mx-auto max-w-7xl px-6">
             <div className="mb-20 text-center">
-              <h2 className="mb-6 text-4xl font-black md:text-6xl tracking-tighter">Choose Your Power</h2>
-              <p className="text-white/40 text-lg font-medium">No long-term contracts. Cancel anytime.</p>
+              <h2 className="mb-6 text-4xl font-black md:text-6xl tracking-tighter">Escolha seu Plano</h2>
+              <p className="text-white/40 text-lg font-medium">Sem contratos de fidelidade. Cancele quando quiser.</p>
             </div>
             <div className="grid gap-10 md:grid-cols-3">
               {plans.map((plan, i) => (
@@ -272,7 +272,7 @@ function Index() {
         <div className="mx-auto max-w-7xl px-6 text-center">
           <div className="flex flex-col items-center gap-6">
              <span className="text-2xl font-black tracking-tighter uppercase italic">IPTV<span className="text-primary">FELIPEPRO</span></span>
-             <p className="text-white/20 text-xs font-bold tracking-[0.3em]">ENGINEERED FOR EXCELLENCE © 2026</p>
+             <p className="text-white/20 text-xs font-bold tracking-[0.3em]">DESENVOLVIDO PARA A EXCELÊNCIA © 2026</p>
           </div>
         </div>
       </footer>
@@ -286,7 +286,7 @@ function Index() {
           whileTap={{ scale: 0.9 }}
           href={WHATSAPP_LINK}
           className="fixed bottom-10 right-10 z-[100] flex h-20 w-20 items-center justify-center rounded-3xl bg-[#25D366] text-white shadow-2xl transition-shadow hover:shadow-[#25D366]/40"
-          aria-label="Contact support on WhatsApp"
+          aria-label="Falar com suporte no WhatsApp"
         >
           <MessageCircle className="h-10 w-10 fill-current" />
         </motion.a>
