@@ -50,13 +50,13 @@ function Index() {
       {/* Hero Section */}
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
-          <img 
-            src="https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=2069&auto=format&fit=crop" 
-            alt="Hero Background" 
-            className="h-full w-full object-cover opacity-30"
-          />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+        <img 
+          src="https://images.unsplash.com/photo-1593784991095-a205039470b6?q=80&w=2070&auto=format&fit=crop" 
+          alt="Hero Background" 
+          className="h-full w-full object-cover opacity-40 scale-105"
+        />
+      </div>
 
         <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
           <motion.div
