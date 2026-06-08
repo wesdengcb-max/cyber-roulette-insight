@@ -190,7 +190,9 @@ function Index() {
               transition={{ duration: 1.5 }}
               src="https://images.unsplash.com/photo-1593784991095-a205039470b6?q=80&w=2070&auto=format&fit=crop" 
               className="w-full h-full object-cover"
-              alt="Background"
+              alt="TV de alta definição exibindo conteúdo cinematográfico"
+              loading="eager"
+              decoding="sync"
              />
           </div>
 
@@ -239,7 +241,12 @@ function Index() {
                    <a href="#planos" className="w-full sm:w-auto bg-primary text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest uppercase shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all">
                       Ver Planos em Oferta
                    </a>
-                   <a href={WHATSAPP_LINK} className="w-full sm:w-auto bg-white/5 backdrop-blur-md border border-white/10 text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest uppercase hover:bg-white/10 active:scale-95 transition-all">
+                   <a 
+                      href={WHATSAPP_LINK} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto bg-white/5 backdrop-blur-md border border-white/10 text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest uppercase hover:bg-white/10 active:scale-95 transition-all"
+                    >
                       Falar no Suporte
                    </a>
                 </div>
