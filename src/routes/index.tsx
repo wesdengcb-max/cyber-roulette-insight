@@ -422,7 +422,7 @@ function Index() {
                   <MessageCircle className="h-6 w-6" />
                 </a>
               </div>
-              <p className=\"text-[13px] font-bold text-white/20 tracking-wide\">© 2026 IPTVFELIPEPRO. DESIGN BY PREMIUM ELITE.</p>
+              <p className="text-[13px] font-bold text-white/20 tracking-wide">© 2026 IPTVFELIPEPRO. DESIGN BY PREMIUM ELITE.</p>
             </div>
           </div>
         </div>
