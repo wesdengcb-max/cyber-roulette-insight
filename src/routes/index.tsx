@@ -95,6 +95,39 @@ function Index() {
         </div>
       </section>
 
+      {/* Catalog Preview */}
+      <section id="catalogo" className="py-24 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-xl">
+              <h2 className="mb-4 text-4xl font-black md:text-5xl uppercase tracking-tighter">O maior catálogo do Brasil</h2>
+              <p className="text-white/60">Novidades adicionadas diariamente. Filmes que acabaram de sair do cinema e as séries mais premiadas.</p>
+            </div>
+            <a href={WHATSAPP_LINK} className="text-primary font-bold hover:underline flex items-center gap-2">
+              Ver catálogo completo <ChevronRight className="h-4 w-4" />
+            </a>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+            {[
+              "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2050&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=2056&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=1935&auto=format&fit=crop"
+            ].map((img, i) => (
+              <motion.div 
+                key={i}
+                whileHover={{ scale: 1.05, zIndex: 10 }}
+                className="aspect-[2/3] overflow-hidden rounded-xl border border-white/10 shadow-2xl"
+              >
+                <img src={img} alt="Poster" className="h-full w-full object-cover" />
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section id="beneficios" className="py-24">
         <div className="mx-auto max-w-7xl px-6">
