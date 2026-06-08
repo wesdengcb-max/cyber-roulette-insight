@@ -1,535 +1,310 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { Activity, Shield, Target, TrendingUp, User, Clock, X, BarChart3, Flame, CheckCircle2 } from "lucide-react";
-import { fetchBlazeRecent, type BlazeSlot } from "@/lib/blaze.functions";
-
-// Simulando assets que não existem localmente mas estão no repo original
-const blazeLogo = "https://raw.githubusercontent.com/wesdengcb-max/freitasmestredablaze/main/src/assets/blaze-card.png";
-const jonbetLogo = "https://raw.githubusercontent.com/wesdengcb-max/freitasmestredablaze/main/src/assets/jonbet-card.png";
-const brancoIcon = "https://raw.githubusercontent.com/wesdengcb-max/freitasmestredablaze/main/src/assets/branco-icon.png";
-const freitasBanner = "https://raw.githubusercontent.com/wesdengcb-max/freitasmestredablaze/main/src/assets/freitas-banner.png";
-const crownIcon = "https://raw.githubusercontent.com/wesdengcb-max/freitasmestredablaze/main/src/assets/crown-icon.png";
+import { 
+  Play, 
+  Tv, 
+  Zap, 
+  ShieldCheck, 
+  CheckCircle2, 
+  MessageCircle,
+  Smartphone,
+  Monitor,
+  Gamepad2,
+  ChevronRight,
+  Star
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Freitas Do Branco — IA · Análise Double Blaze" },
-      { name: "description", content: "Inteligência artificial para análise probabilística do Double da Blaze em tempo real." },
+      { title: "IPTV PRO - Cinema em Casa com Qualidade 4K" },
+      { name: "description", content: "A melhor experiência de entretenimento. Mais de 80.000 conteúdos em 4K, Anti-freeze e suporte 24h." },
     ],
   }),
 });
 
-type Slot = { n: number; c: "red" | "black" | "white" };
-type Phase = "select" | "analyzing" | "confirmed";
-type Platform = { id: string; name: string; tone: string; logo: string };
-
-const PLATFORMS: Platform[] = [
-  { id: "blaze", name: "Blaze", tone: "from-[oklch(0.62_0.26_25)] to-[oklch(0.4_0.22_25)]", logo: blazeLogo },
-  { id: "jonbet", name: "Jonbet", tone: "from-[oklch(0.62_0.22_145)] to-[oklch(0.4_0.18_145)]", logo: jonbetLogo },
-];
-
-function slotClass(c: Slot["c"], size: "xs" | "sm" | "md" | "lg" = "sm") {
-  const base =
-    c === "red"
-      ? "bg-[#e94560] text-white"
-      : c === "black"
-      ? "bg-[#1a1d29] text-white"
-      : "bg-white text-[#e94560]";
-  const sz =
-    size === "xs"
-      ? "h-6 w-6 text-[10px]"
-      : size === "sm"
-      ? "h-9 w-9 text-sm"
-      : size === "md"
-      ? "h-14 w-14 text-base"
-      : "h-24 w-24 text-3xl";
-  return `${base} ${sz} grid place-items-center rounded-full font-extrabold shrink-0 select-none`;
-}
-
-function SlotChip({
-  slot,
-  size = "sm",
-  label,
-  className = "",
-}: {
-  slot: Slot | null;
-  size?: "xs" | "sm" | "md" | "lg";
-  label?: React.ReactNode;
-  className?: string;
-}) {
-  const c: Slot["c"] = slot?.c ?? "black";
-  const ringSize =
-    size === "xs" ? "h-4 w-4" : size === "sm" ? "h-6 w-6" : size === "md" ? "h-10 w-10" : "h-16 w-16";
-  const ringBorder = size === "xs" ? "border" : "border-2";
-  const ringColor = c === "white" ? "border-[#e94560]/70" : "border-white/85";
-  const crownSize =
-    size === "xs"
-      ? "h-2.5 -top-1.5"
-      : size === "sm"
-      ? "h-3.5 -top-2"
-      : size === "md"
-      ? "h-5 -top-3"
-      : "h-8 -top-5";
-  const showCrown = c === "white";
-
-  if (c === "white" && label === undefined) {
-    return (
-      <div className={`relative ${slotClass("white", size)} ${className}`}>
-        {showCrown && (
-          <img
-            src={crownIcon}
-            alt=""
-            aria-hidden
-            className={`pointer-events-none absolute left-1/2 -translate-x-1/2 ${crownSize} w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] select-none`}
-          />
-        )}
-        <img
-          src={brancoIcon}
-          alt=""
-          aria-hidden
-          className="h-[78%] w-[78%] object-contain select-none rounded-full"
-          draggable={false}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className={`relative ${slotClass(c, size)} ${className}`}>
-      {showCrown && (
-        <img
-          src={crownIcon}
-          alt=""
-          aria-hidden
-          className={`pointer-events-none absolute left-1/2 -translate-x-1/2 ${crownSize} w-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] select-none`}
-        />
-      )}
-      <div
-        className={`${ringSize} ${ringBorder} ${ringColor} rounded-full grid place-items-center leading-none`}
-      >
-        <span>{label !== undefined ? label : slot?.n ?? ""}</span>
-      </div>
-    </div>
-  );
-}
-
-function deriveSignal(history: Slot[]): Slot {
-  const counts = history.reduce(
-    (acc, slot) => {
-      acc[slot.c] += 1;
-      acc.numbers.set(slot.n, (acc.numbers.get(slot.n) ?? 0) + 1);
-      return acc;
-    },
-    { red: 0, black: 0, white: 0, numbers: new Map<number, number>() },
-  );
-
-  const c: Slot["c"] = counts.red >= counts.black ? "red" : "black";
-  const n = history
-    .filter((slot) => slot.c === c)
-    .sort((a, b) => (counts.numbers.get(b.n) ?? 0) - (counts.numbers.get(a.n) ?? 0))[0]?.n ?? (c === "red" ? 1 : 8);
-
-  return { c, n };
-}
-
-function useClock() {
-  const [now, setNow] = useState<string>("");
-
-  useEffect(() => {
-    const tick = () => setNow(new Date().toLocaleTimeString("pt-BR", { hour12: false }));
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  return now;
-}
-
 function Index() {
-  const [phase, setPhase] = useState<Phase>("select");
-  const [platform, setPlatform] = useState<Platform | null>(null);
-  const [history, setHistory] = useState<Slot[]>([]);
-  const [flashId, setFlashId] = useState<string | null>(null);
-  const lastIdRef = useRef<string | null>(null);
-  const [prediction, setPrediction] = useState<Slot | null>(null);
-  const [confirmedIn, setConfirmedIn] = useState(8);
-  const time = useClock();
-  const historyRef = useRef<Slot[]>([]);
-
-  const platformId = (platform?.id === "jonbet" ? "jonbet" : "blaze") as "blaze" | "jonbet";
-  const fetchRecent = useServerFn(fetchBlazeRecent);
-  const { data: live } = useQuery({
-    queryKey: ["roulette-recent", platformId],
-    queryFn: async () => {
-      const response = await fetchRecent({ data: { platform: platformId } });
-      return response;
-    },
-    enabled: phase !== "select",
-    refetchInterval: 3000,
-    refetchOnWindowFocus: true,
-  });
-
-  useEffect(() => {
-    const items = live?.data;
-    if (!items || items.length === 0) return;
-
-    const mapped: Slot[] = items.map((s: BlazeSlot) => ({ n: s.n, c: s.c }));
-    historyRef.current = mapped;
-    setHistory(mapped);
-
-    const newest = items[0];
-    if (newest.id !== lastIdRef.current) {
-      lastIdRef.current = newest.id;
-      setFlashId(newest.id);
-      setTimeout(() => setFlashId(null), 900);
-    }
-  }, [live]);
-
-  useEffect(() => {
-    if (phase !== "confirmed") return;
-
-    const id = setInterval(() => {
-      setConfirmedIn((c) => {
-        if (c <= 1) {
-          setPhase("analyzing");
-          return 0;
-        }
-        return c - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, [phase]);
-
-  const stats = useMemo(() => {
-    const reds = history.filter((s) => s.c === "red").length;
-    const blacks = history.filter((s) => s.c === "black").length;
-    const whites = history.filter((s) => s.c === "white").length;
-    const total = history.length || 1;
-    const best: Slot["c"] = reds >= blacks ? "red" : "black";
-    const acc = (Math.max(reds, blacks) / total) * 100;
-    const indicated = deriveSignal(history).n;
-    return {
-      reds, blacks, whites, total, best, indicated,
-      accuracy: acc.toFixed(1),
-      pRed: ((reds / total) * 100).toFixed(1),
-      pBlack: ((blacks / total) * 100).toFixed(1),
-      pWhite: ((whites / total) * 100).toFixed(1),
-    };
-  }, [history]);
-
-  const showcase: (Slot | null)[] = [
-    history[6] ?? null,
-    history[5] ?? null,
-    history[4] ?? null,
-    history[3] ?? null,
-    history[2] ?? null,
-    history[1] ?? null,
-    history[0] ?? null,
-  ];
-
-  if (phase === "select") {
-    return (
-      <PlatformSelect
-        time={time}
-        onSelect={(p) => {
-          setPlatform(p);
-          setPhase("analyzing");
-        }}
-      />
-    );
-  }
-
-  const themeClass = platform?.id === "jonbet" ? "theme-jonbet" : "";
+  const WHATSAPP_LINK = "https://wa.me/5500000000000?text=Olá! Quero conhecer os planos de IPTV.";
 
   return (
-    <main className={`min-h-screen px-3 py-4 md:px-6 md:py-6 ${themeClass}`}>
-      <div className="mx-auto max-w-6xl space-y-4">
-        <TopBar time={time} platform={platform} onExit={() => setPhase("select")} onHome={() => setPhase("select")} />
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-primary selection:text-white">
+      {/* Navbar */}
+      <nav className="fixed top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+              <Tv className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-black tracking-tighter uppercase">IPTV<span className="text-primary">PRO</span></span>
+          </div>
+          <div className="hidden items-center gap-8 text-sm font-medium md:flex">
+            <a href="#beneficios" className="text-white/60 transition-colors hover:text-white">Benefícios</a>
+            <a href="#catalogo" className="text-white/60 transition-colors hover:text-white">Catálogo</a>
+            <a href="#planos" className="text-white/60 transition-colors hover:text-white">Planos</a>
+            <a href={WHATSAPP_LINK} className="rounded-full bg-primary px-6 py-2.5 font-bold transition-all hover:scale-105 hover:bg-primary/90">TESTE GRÁTIS</a>
+          </div>
+        </div>
+      </nav>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_2fr_1fr]">
-          <Pill icon={<Shield className="h-4 w-4" />} label="Estratégia" value="Não Utilizar Gale" />
+      {/* Hero Section */}
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden pt-20">
+        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+        <img 
+          src="https://images.unsplash.com/photo-1593784991095-a205039470b6?q=80&w=2070&auto=format&fit=crop" 
+          alt="Hero Background" 
+          className="h-full w-full object-cover opacity-40 scale-105"
+        />
+      </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setPrediction(deriveSignal(historyRef.current));
-              setConfirmedIn(8);
-              setPhase("confirmed");
-            }}
-            className="panel group relative overflow-hidden rounded-2xl bg-gradient-to-br from-[oklch(0.62_0.26_25)] to-[oklch(0.38_0.22_25)] px-6 py-5 text-center animate-pulse-glow transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            <span className="relative z-10 flex items-center justify-center gap-3 text-lg font-extrabold uppercase tracking-[0.32em] text-white sm:text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-              <Flame className="h-5 w-5 fill-white" />
-              Analisar
+            <span className="inline-block rounded-full border border-primary/30 bg-primary/10 px-4 py-1 text-sm font-bold tracking-wider text-primary uppercase mb-6">
+              A Revolução do Entretenimento
             </span>
-            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent group-hover:animate-progress" />
-          </button>
-
-          <Pill icon={<Activity className="h-4 w-4" />} label="Status" value="Analisando" valueClass="text-primary" />
-        </section>
-
-        <section className="panel px-5 py-6">
-          <div className="flex items-center justify-center gap-3 sm:gap-4">
-            {showcase.map((s, i) => (
-              <SlotChip
-                key={`sc-${i}-${s?.n ?? "empty"}`}
-                slot={s}
-                size={i === 6 ? "lg" : i === 5 ? "md" : "sm"}
-                className={`${i === 6 ? "ring-2 ring-primary ring-offset-4 ring-offset-background" : "opacity-90"} ${flashId && i === 6 ? "ring-4 ring-primary scale-110 transition-transform" : ""}`}
-              />
-            ))}
-          </div>
-
-          <div className="mt-6">
-            <p className="text-center text-xs uppercase tracking-[0.3em] text-muted-foreground">
-              <span className="text-primary">◆</span> Clique em <span className="text-primary font-bold">ANALISAR</span> para receber o sinal
+            <h1 className="mb-6 text-5xl font-black leading-tight tracking-tight md:text-7xl">
+              Tudo o que você ama, <br />
+              <span className="bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">em um só lugar.</span>
+            </h1>
+            <p className="mx-auto mb-10 max-w-2xl text-lg text-white/60 md:text-xl">
+              Canais do mundo todo, esportes ao vivo, os últimos lançamentos do cinema e séries completas. Qualidade 4K estável sem travamentos.
             </p>
-          </div>
-        </section>
-
-        <section className="panel px-5 py-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-primary">
-              <BarChart3 className="h-4 w-4" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Casas Anteriores</span>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <a href={WHATSAPP_LINK} className="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-bold transition-all hover:scale-105 hover:bg-primary/90 sm:w-auto">
+                ASSINAR AGORA
+                <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </a>
+              <a href={WHATSAPP_LINK} className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-8 py-4 text-lg font-bold transition-all hover:bg-white/10 sm:w-auto">
+                <Play className="h-5 w-5 fill-current" />
+                TESTE GRÁTIS
+              </a>
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Últimas {history.length}</span>
+            
+            <div className="mt-12 flex items-center justify-center gap-8 opacity-50 grayscale transition-all hover:opacity-100 hover:grayscale-0">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" className="h-6" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+" className="h-10" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Amazon_Prime_Video_logo.svg" alt="Prime Video" className="h-6" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/c/ce/HBO_Max_Logo.svg" alt="HBO Max" className="h-6" />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Catalog Preview */}
+      <section id="catalogo" className="py-24 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-xl">
+              <h2 className="mb-4 text-4xl font-black md:text-5xl uppercase tracking-tighter">O maior catálogo do Brasil</h2>
+              <p className="text-white/60">Novidades adicionadas diariamente. Filmes que acabaram de sair do cinema e as séries mais premiadas.</p>
+            </div>
+            <a href={WHATSAPP_LINK} className="text-primary font-bold hover:underline flex items-center gap-2">
+              Ver catálogo completo <ChevronRight className="h-4 w-4" />
+            </a>
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-1.5">
-            {[...history].reverse().map((s, i) => (
-              <SlotChip key={`h-${i}-${s.n}`} slot={s} size="xs" />
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+            {[
+              "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2050&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=2056&auto=format&fit=crop",
+              "https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=1935&auto=format&fit=crop"
+            ].map((img, i) => (
+              <motion.div 
+                key={i}
+                whileHover={{ scale: 1.05, zIndex: 10 }}
+                className="aspect-[2/3] overflow-hidden rounded-xl border border-white/10 shadow-2xl"
+              >
+                <img src={img} alt="Poster" className="h-full w-full object-cover" />
+              </motion.div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="panel px-5 py-5">
-            <div className="flex items-center gap-2 text-primary">
-              <Target className="h-4 w-4" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Cor Mais Indicada</span>
-            </div>
-            <div className="mt-4 flex items-center gap-4">
-              <SlotChip slot={{ c: stats.best, n: stats.indicated }} size="md" />
-              <div>
-                <div className="text-3xl font-extrabold text-white">{stats.accuracy}%</div>
-                <div className="text-xs font-bold uppercase tracking-[0.25em] text-primary">
-                  {platform?.id === "jonbet" && stats.best === "red" ? "Verde" : stats.best === "red" ? "Vermelho" : "Preto"}
+      {/* Features */}
+      <section id="beneficios" className="py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: <Zap className="h-8 w-8 text-primary" />,
+                title: "Anti-Freeze 4.0",
+                desc: "Tecnologia de ponta para garantir estabilidade absoluta, mesmo em conexões oscilantes."
+              },
+              {
+                icon: <ShieldCheck className="h-8 w-8 text-primary" />,
+                title: "Segurança Total",
+                desc: "Servidores criptografados e suporte dedicado 24h por dia para sua tranquilidade."
+              },
+              {
+                icon: <Star className="h-8 w-8 text-primary" />,
+                title: "Qualidade Ultra HD",
+                desc: "Aproveite conteúdos em Full HD e 4K HDR para uma experiência de cinema real."
+              }
+            ].map((feature, i) => (
+              <motion.div 
+                key={i}
+                whileHover={{ y: -10 }}
+                className="rounded-3xl border border-white/5 bg-white/5 p-8 backdrop-blur-sm"
+              >
+                <div className="mb-6 inline-block rounded-2xl bg-primary/10 p-4">
+                  {feature.icon}
+                </div>
+                <h3 className="mb-4 text-2xl font-bold">{feature.title}</h3>
+                <p className="text-white/60 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Plans Section */}
+      <section id="planos" className="py-24 bg-gradient-to-b from-transparent to-primary/5">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-black md:text-5xl">Escolha o seu plano</h2>
+            <p className="text-white/60">Sem fidelidade. Cancele quando quiser.</p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              { name: "Mensal", price: "35", duration: "Mês", popular: false },
+              { name: "Trimestral", price: "85", duration: "3 Meses", popular: true },
+              { name: "Anual", price: "280", duration: "Ano", popular: false },
+            ].map((plan, i) => (
+              <div 
+                key={i}
+                className={`relative flex flex-col rounded-3xl border p-8 transition-all hover:scale-[1.02] ${
+                  plan.popular 
+                    ? "border-primary bg-primary/5 shadow-[0_0_40px_rgba(233,69,96,0.1)]" 
+                    : "border-white/5 bg-white/5"
+                }`}
+              >
+                {plan.popular && (
+                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-bold uppercase tracking-widest">
+                    MAIS VENDIDO
+                  </span>
+                )}
+                <h3 className="mb-2 text-xl font-bold text-white/60">{plan.name}</h3>
+                <div className="mb-8 flex items-baseline gap-1">
+                  <span className="text-4xl font-black">R$ {plan.price}</span>
+                  <span className="text-white/40">/{plan.duration}</span>
+                </div>
+                <ul className="mb-10 space-y-4">
+                  {[
+                    "+80.000 Conteúdos",
+                    "Canais 4K & Full HD",
+                    "Esportes ao Vivo",
+                    "Novelas & Documentários",
+                    "Anti-travamentos",
+                    "Suporte VIP"
+                  ].map((item, j) => (
+                    <li key={j} className="flex items-center gap-3 text-sm text-white/80">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <a 
+                  href={WHATSAPP_LINK}
+                  className={`mt-auto block rounded-xl py-4 text-center font-bold transition-all ${
+                    plan.popular ? "bg-primary hover:bg-primary/90" : "bg-white/10 hover:bg-white/20"
+                  }`}
+                >
+                  QUERO ESTE PLANO
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Multi Device Section */}
+      <section className="py-24">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col items-center justify-between gap-12 md:flex-row">
+            <div className="max-w-xl">
+              <h2 className="mb-6 text-4xl font-black md:text-5xl">Assista em qualquer dispositivo</h2>
+              <p className="mb-8 text-lg text-white/60">Compatível com todos os sistemas. Leve seu entretenimento para onde você for.</p>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4 border border-white/5">
+                  <Smartphone className="h-6 w-6 text-primary" />
+                  <span className="font-medium">Smartphone</span>
+                </div>
+                <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4 border border-white/5">
+                  <Tv className="h-6 w-6 text-primary" />
+                  <span className="font-medium">Smart TV</span>
+                </div>
+                <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4 border border-white/5">
+                  <Monitor className="h-6 w-6 text-primary" />
+                  <span className="font-medium">Computador</span>
+                </div>
+                <div className="flex items-center gap-3 rounded-2xl bg-white/5 p-4 border border-white/5">
+                  <Gamepad2 className="h-6 w-6 text-primary" />
+                  <span className="font-medium">TV Box</span>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="panel px-5 py-5">
-            <div className="flex items-center gap-2 text-primary">
-              <TrendingUp className="h-4 w-4" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Chances da Jogada</span>
-            </div>
-            <div className="mt-4 space-y-2.5">
-              {[
-                { label: platform?.id === "jonbet" ? "Verde" : "Vermelho", val: stats.pRed, c: "red" as const },
-                { label: "Preto", val: stats.pBlack, c: "black" as const },
-                { label: "Branco", val: stats.pWhite, c: "white" as const },
-              ].map((row) => (
-                <div key={row.label} className="flex items-center gap-3">
-                  <SlotChip slot={{ c: row.c, n: 0 }} size="xs" label="" />
-                  <div className="flex-1">
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[oklch(0.2_0.02_20)]">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-primary to-[oklch(0.7_0.28_25)] transition-all"
-                        style={{ width: `${row.val}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="w-14 text-right text-sm font-bold text-white">{row.val}%</span>
-                </div>
-              ))}
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-full bg-primary/20 blur-3xl" />
+              <img 
+                src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?q=80&w=2070&auto=format&fit=crop" 
+                alt="Multi Device Support" 
+                className="relative rounded-3xl border border-white/10 shadow-2xl"
+              />
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="panel px-5 py-5">
-            <div className="flex items-center gap-2 text-primary">
-              <Activity className="h-4 w-4" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-muted-foreground">Quantidade de Vezes</span>
+      {/* CTA Section */}
+      <section className="py-24">
+        <div className="mx-auto max-w-5xl px-6 text-center">
+          <div className="rounded-[40px] bg-gradient-to-br from-primary to-primary/40 p-12 shadow-[0_0_80px_rgba(233,69,96,0.3)] md:p-20">
+            <h2 className="mb-6 text-4xl font-black md:text-6xl">Pronto para a melhor experiência?</h2>
+            <p className="mb-10 text-lg text-white/80 md:text-xl">Junte-se a milhares de clientes satisfeitos e transforme sua TV hoje mesmo.</p>
+            <a href={WHATSAPP_LINK} className="inline-flex items-center gap-3 rounded-2xl bg-white px-10 py-5 text-xl font-black text-black transition-all hover:scale-105 active:scale-95">
+              COMEÇAR AGORA
+              <ChevronRight className="h-6 w-6" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/5 py-12">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-primary">
+                <Tv className="h-5 w-5 text-white" />
+              </div>
+              <span className="text-lg font-black tracking-tighter uppercase">IPTV<span className="text-primary">PRO</span></span>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-              <Mini label={platform?.id === "jonbet" ? "Verde" : "Vermelho"} value={stats.reds} c="red" />
-              <Mini label="Preto" value={stats.blacks} c="black" />
-              <Mini label="Branco" value={stats.whites} c="white" />
-            </div>
-          </div>
-        </section>
-
-        <section className="panel overflow-hidden p-0">
-          <img
-            src={freitasBanner}
-            alt="Freitas White Branco — Não se esqueça do gerenciamento"
-            className="w-full h-auto block"
-            loading="lazy"
-          />
-        </section>
-
-        <footer className="pt-2 text-center text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          © {new Date().getFullYear()} Freitas Do Branco · Plataforma: {platform?.name ?? "—"} · Apenas entretenimento
-        </footer>
-      </div>
-
-      {phase === "confirmed" && prediction && (
-        <ConfirmedModal
-          slot={prediction}
-          secondsLeft={confirmedIn}
-          platformId={platform?.id}
-          onClose={() => {
-            setPhase("analyzing");
-          }}
-        />
-      )}
-    </main>
-  );
-}
-
-function TopBar({ time, platform, onExit, onHome }: { time: string; platform: Platform | null; onExit: () => void; onHome?: () => void }) {
-  return (
-    <header className="panel flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-      <button onClick={onHome} className="flex items-center gap-3 transition-transform active:scale-95 text-left">
-        <div className="relative grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-primary to-[oklch(0.4_0.2_25)] glow-red overflow-visible">
-          <img src={brancoIcon} alt="Freitas do Branco" className="h-7 w-7 object-contain rounded-full" />
-          <img src={crownIcon} alt="" aria-hidden className="pointer-events-none absolute -top-3 left-1/2 -translate-x-1/2 h-4 w-auto drop-shadow-[0_2px_3px_rgba(0,0,0,0.7)]" />
-        </div>
-        <div>
-          <h1 className="text-base font-extrabold tracking-[0.18em] text-white sm:text-lg">
-            FREITAS DO <span className="text-primary">BRANCO</span>
-          </h1>
-          <p className="text-[10px] uppercase tracking-[0.32em] text-muted-foreground">Inteligência Artificial</p>
-        </div>
-      </button>
-      <div className="flex flex-wrap items-center gap-2 text-xs">
-        {platform && (
-          <button onClick={onExit} className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-card/60 px-3 py-1.5 text-muted-foreground hover:text-white transition-colors">
-            <span className="font-bold uppercase tracking-widest text-primary">{platform.name}</span>
-            <X className="h-3 w-3" />
-          </button>
-        )}
-        <div className="flex items-center gap-1.5 rounded-full border border-[oklch(0.72_0.2_145/0.4)] bg-[oklch(0.2_0.05_145/0.2)] px-3 py-1.5">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-          </span>
-          <span className="font-bold uppercase tracking-widest text-success">Online</span>
-        </div>
-        <div className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-card/60 px-3 py-1.5 text-muted-foreground">
-          <Clock className="h-3.5 w-3.5 text-primary" />
-          <span className="font-mono">{time}</span>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function Pill({ icon, label, value, valueClass }: { icon: React.ReactNode; label: string; value: string; valueClass?: string }) {
-  return (
-    <div className="panel flex items-center gap-3 px-4 py-4">
-      <div className="grid h-9 w-9 place-items-center rounded-md border border-primary/40 bg-card text-primary">{icon}</div>
-      <div className="text-left">
-        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">{label}</p>
-        <p className={`text-sm font-extrabold uppercase tracking-wider text-white ${valueClass ?? ""}`}>{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function Mini({ label, value, c }: { label: string; value: number; c: Slot["c"] }) {
-  return (
-    <div className="rounded-lg border border-primary/20 bg-card/50 px-2 py-3 transition-colors hover:bg-card/70">
-      <div className="mx-auto flex justify-center">
-        <SlotChip slot={{ c, n: value }} size="sm" label={value} />
-      </div>
-      <div className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </div>
-    </div>
-  );
-}
-
-function PlatformSelect({ time, onSelect }: { time: string; onSelect: (p: Platform) => void }) {
-  return (
-    <main className="min-h-screen px-3 py-4 md:px-6 md:py-6">
-      <div className="mx-auto max-w-4xl space-y-8">
-        <TopBar time={time} platform={null} onExit={() => {}} onHome={() => {}} />
-        <div className="panel px-6 py-12 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary">Bem-vindo</p>
-          <h2 className="mt-3 text-2xl font-extrabold text-white sm:text-4xl">Escolha sua plataforma</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Onde você vai operar agora?</p>
-
-          <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-5 sm:grid-cols-2">
-            {PLATFORMS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => onSelect(p)}
-                className={`panel group relative overflow-hidden rounded-2xl bg-gradient-to-br ${p.tone} px-6 py-10 transition-transform hover:scale-[1.03] active:scale-[0.98]`}
-              >
-                <div className="relative z-10 flex flex-col items-center gap-4 text-white">
-                  <div className="h-16 w-16 overflow-hidden rounded-xl border border-white/20 shadow-lg">
-                    <img src={p.logo} alt={p.name} className="h-full w-full object-cover" />
-                  </div>
-                  <span className="text-2xl font-extrabold uppercase tracking-[0.25em]">{p.name}</span>
-                </div>
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-progress" />
-              </button>
-            ))}
-          </div>
-          <p className="mt-8 text-xs text-muted-foreground">Análise probabilística em tempo real via IA</p>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function ConfirmedModal({ slot, secondsLeft, onClose, platformId }: { slot: Slot; secondsLeft: number; onClose: () => void; platformId?: string }) {
-  const isJonbet = platformId === "jonbet";
-  const label = slot.c === "red" ? (isJonbet ? "NO VERDE" : "NO VERMELHO") : slot.c === "black" ? "NO PRETO" : "NO BRANCO";
-  
-  return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 backdrop-blur-sm animate-fade-in px-4">
-      <div className="panel relative w-full max-w-md px-6 py-10 text-center" style={{ animation: "fade-in 0.3s ease-out" }}>
-        <button onClick={onClose} className="absolute right-3 top-3 text-muted-foreground hover:text-white transition-colors">
-          <X className="h-5 w-5" />
-        </button>
-
-        <div className="mb-6 flex flex-col items-center">
-          <div className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-success/20 text-success">
-            <CheckCircle2 className="h-8 w-8" />
-          </div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-success">Entrada Confirmada</p>
-          <h2 className="mt-2 text-3xl font-black text-white">JOGAR {label}</h2>
-        </div>
-
-        <div className="mb-8 flex flex-col items-center justify-center gap-6">
-          <div className="relative">
-            <SlotChip slot={slot} size="lg" className="glow-red-strong scale-110" />
-            <div className="absolute -right-4 -top-4 grid h-10 w-10 place-items-center rounded-full bg-primary font-mono text-lg font-bold text-white shadow-lg ring-2 ring-background">
-              {secondsLeft}
+            <p className="text-sm text-white/40">© 2026 IPTV PRO - Todos os direitos reservados.</p>
+            <div className="flex gap-6">
+              <a href={WHATSAPP_LINK} className="text-white/40 hover:text-primary transition-colors">
+                <MessageCircle className="h-6 w-6" />
+              </a>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <SlotChip slot={{ c: "white", n: 0 }} size="sm" />
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Proteger no Branco</span>
-          </div>
         </div>
+      </footer>
 
-        <button
-          onClick={onClose}
-          className="w-full rounded-xl bg-gradient-to-r from-primary to-[oklch(0.4_0.22_25)] py-4 font-black uppercase tracking-[0.2em] text-white shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
-        >
-          Fechar Sinal
-        </button>
-
-        <p className="mt-4 text-[10px] uppercase tracking-widest text-muted-foreground">
-          Aguarde o resultado para uma nova análise
-        </p>
-      </div>
+      {/* Floating WhatsApp Button */}
+      <a 
+        href={WHATSAPP_LINK}
+        className="fixed bottom-8 right-8 z-[60] flex h-16 w-16 items-center justify-center rounded-full bg-[#25D366] text-white shadow-2xl transition-all hover:scale-110 active:scale-95"
+      >
+        <MessageCircle className="h-8 w-8 fill-current" />
+      </a>
     </div>
   );
 }
