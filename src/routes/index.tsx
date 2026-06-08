@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "IPTV PRO - Cinema em Casa com Qualidade 4K" },
+      { title: "IPTVFELIPEPRO - Cinema em Casa com Qualidade 4K" },
       { name: "description", content: "A melhor experiência de entretenimento. Mais de 80.000 conteúdos em 4K, Anti-freeze e suporte 24h." },
     ],
   }),
@@ -36,7 +36,7 @@ function Index() {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
               <Tv className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-black tracking-tighter uppercase">IPTV<span className="text-primary">PRO</span></span>
+            <span className="text-xl font-black tracking-tighter uppercase">IPTV<span className="text-primary">FELIPEPRO</span></span>
           </div>
           <div className="hidden items-center gap-8 text-sm font-medium md:flex">
             <a href="#beneficios" className="text-white/60 transition-colors hover:text-white">Benefícios</a>
@@ -286,9 +286,9 @@ function Index() {
               <div className="flex h-8 w-8 items-center justify-center rounded bg-primary">
                 <Tv className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-black tracking-tighter uppercase">IPTV<span className="text-primary">PRO</span></span>
+              <span className="text-lg font-black tracking-tighter uppercase">IPTV<span className="text-primary">FELIPEPRO</span></span>
             </div>
-            <p className="text-sm text-white/40">© 2026 IPTV PRO - Todos os direitos reservados.</p>
+            <p className="text-sm text-white/40">© 2026 IPTVFELIPEPRO - Todos os direitos reservados.</p>
             <div className="flex gap-6">
               <a href={WHATSAPP_LINK} className="text-white/40 hover:text-primary transition-colors">
                 <MessageCircle className="h-6 w-6" />
