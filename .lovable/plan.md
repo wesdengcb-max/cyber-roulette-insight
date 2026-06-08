@@ -1,22 +1,35 @@
-I will create a professional, high-converting IPTV landing page with a "Cinematographic Dark" aesthetic (inspired by Netflix/Disney+), focusing on sales via WhatsApp and plan displays.
+Refactor and harden the application's security posture while maintaining high performance and the premium "JapaStore" aesthetic.
 
-### Technical Details
-- **Framework**: React + Vite
-- **Styling**: Tailwind CSS + Shadcn UI
-- **Components**:
-    - **Hero Section**: High-impact background with a clear Value Proposition.
-    - **Features**: Quality icons showing 4K, Anti-freeze technology, Multi-device support.
-    - **Pricing/Plans**: Modern cards with highlight for the "Best Seller" plan.
-    - **Catalog Preview**: Visual grid showing popular movie/series posters.
-    - **CTA/WhatsApp**: Floating button and section-specific "Buy Now" buttons.
-    - **FAQ**: Clean accordion for common questions.
+### Security Audit & Remediation Plan
 
-### Implementation Steps
-1.  **Setup Layout & Theme**: Configure a dark theme with deep purples/blues and vibrant primary colors (e.g., Electric Blue).
-2.  **Build Components**:
-    - `Navbar`: Sticky with quick "Test Now" button.
-    - `Hero`: Immersive background image with overlay and main CTA.
-    - `PlanCard`: Interactive cards for different subscription tiers.
-    - `ContactSection`: Direct links to WhatsApp support.
-3.  **Responsive Design**: Ensure it looks perfect on mobile, where most IPTV traffic occurs.
-4.  **Final Polish**: Add subtle animations using Framer Motion (or simple CSS transitions) for a premium feel.
+#### 1. Implementation of Security Headers (Application Layer Hardening)
+- Configure **Content Security Policy (CSP)** to mitigate XSS and unauthorized data injection.
+- Enforce **HSTS (HTTP Strict Transport Security)** for secure connections.
+- Set **X-Frame-Options** to prevent clickjacking and **X-Content-Type-Options** to prevent MIME-type sniffing.
+
+#### 2. Input Validation & Sanitization (OWASP Top 10 Mitigation)
+- Introduce a standardized validation layer using **Zod** for any user-facing inputs (e.g., search queries, support form entries).
+- Sanitize dynamic values used in the DOM to prevent DOM-based XSS.
+
+#### 3. Asset Security & Performance (Staff Engineer level optimizations)
+- Implement `fetchpriority="high"` for the LCP image.
+- Add `decoding="async"` and `loading="lazy"` where applicable to optimize CWV.
+- Ensure all external links use `rel="noopener noreferrer"` to prevent tab-nabbing.
+
+#### 4. Environment & Secrets Audit
+- Audit the codebase for hardcoded keys or sensitive PII.
+- Move any static configuration strings that might be sensitive to environment variables if detected.
+
+#### 5. Dependency & Versioning
+- Ensure all critical dependencies are pinned or within safe ranges (already verified with `dependency_scan`).
+
+### Technical Implementation Details
+
+- **CSP Configuration**: I will add a `head` meta tag in the main route to define a strict but functional CSP tailored for a React/Framer-Motion application.
+- **Strict Typing**: Refactor any `any` types in `ReviewCard` and `ProductCard` to strongly typed interfaces to prevent runtime vulnerabilities and logic errors.
+- **Sanitization**: Ensure that the `whatsappLink` and other dynamic strings are properly encoded.
+
+### Validation Strategy
+- Verify the `head` metadata reflects the new security headers.
+- Check the browser console for CSP violations to ensure no breakage.
+- Run a build to ensure type-safety remains intact.

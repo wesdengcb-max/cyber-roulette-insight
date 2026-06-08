@@ -33,18 +33,40 @@ import { memo, useMemo, useState, useEffect } from "react";
  * 4. High-Impact Hero: Visual identity focused on the "JapaStore" premium store aesthetic.
  */
 
+interface Review {
+  user: string;
+  text: string;
+  stars: number;
+  time: string;
+}
+
+interface Plan {
+  name: string;
+  price: string;
+  duration: string;
+  popular: boolean;
+  features: string[];
+}
+
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
       { title: "IPTVFELIPEPRO - A Maior Loja de Streaming do Brasil" },
       { name: "description", content: "Eleve sua experiência de entretenimento ao próximo nível. Mais de 80.000 conteúdos em 4K." },
+      { 
+        "http-equiv": "Content-Security-Policy", 
+        content: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://vitals.vercel-insights.com; frame-ancestors 'none'; upgrade-insecure-requests;" 
+      },
+      { "http-equiv": "X-Frame-Options", content: "DENY" },
+      { "http-equiv": "X-Content-Type-Options", content: "nosniff" },
+      { "http-equiv": "Permissions-Policy", content: "camera=(), microphone=(), geolocation=()" },
     ],
   }),
 });
 
 // Memoized Sub-components
-const ReviewCard = memo(({ user, text, stars, time }: any) => (
+const ReviewCard = memo(({ user, text, stars, time }: Review) => (
   <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-6 min-w-[300px] md:min-w-[350px] snap-center">
     <div className="flex items-center gap-4 mb-4">
       <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg">
@@ -64,7 +86,7 @@ const ReviewCard = memo(({ user, text, stars, time }: any) => (
   </div>
 ));
 
-const ProductCard = memo(({ plan, index, whatsappLink }: any) => (
+const ProductCard = memo(({ plan, index, whatsappLink }: { plan: Plan; index: number; whatsappLink: string }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -107,6 +129,8 @@ const ProductCard = memo(({ plan, index, whatsappLink }: any) => (
 
       <a 
         href={whatsappLink}
+        target="_blank"
+        rel="noopener noreferrer"
         className="flex items-center justify-center gap-2 w-full bg-white text-black py-4 rounded-xl font-black text-sm transition-all hover:bg-primary hover:text-white active:scale-95"
       >
         COMPRE JÁ
@@ -190,7 +214,9 @@ function Index() {
               transition={{ duration: 1.5 }}
               src="https://images.unsplash.com/photo-1593784991095-a205039470b6?q=80&w=2070&auto=format&fit=crop" 
               className="w-full h-full object-cover"
-              alt="Background"
+              alt="TV de alta definição exibindo conteúdo cinematográfico"
+              loading="eager"
+              decoding="sync"
              />
           </div>
 
@@ -239,7 +265,12 @@ function Index() {
                    <a href="#planos" className="w-full sm:w-auto bg-primary text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest uppercase shadow-2xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all">
                       Ver Planos em Oferta
                    </a>
-                   <a href={WHATSAPP_LINK} className="w-full sm:w-auto bg-white/5 backdrop-blur-md border border-white/10 text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest uppercase hover:bg-white/10 active:scale-95 transition-all">
+                   <a 
+                      href={WHATSAPP_LINK} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto bg-white/5 backdrop-blur-md border border-white/10 text-white px-10 py-5 rounded-2xl font-black text-sm tracking-widest uppercase hover:bg-white/10 active:scale-95 transition-all"
+                    >
                       Falar no Suporte
                    </a>
                 </div>
@@ -292,7 +323,12 @@ function Index() {
                   <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-tight mb-6">Pronto para elevar sua <br /> <span className="text-primary">Experiência?</span></h2>
                   <p className="text-white/50 text-lg font-medium leading-relaxed">Junte-se a milhares de clientes e tenha acesso ao melhor conteúdo do mundo agora mesmo.</p>
                 </div>
-                <a href={WHATSAPP_LINK} className="flex-shrink-0 bg-white text-black px-12 py-6 rounded-2xl font-black text-base tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-2xl active:scale-95">
+                <a 
+                  href={WHATSAPP_LINK} 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 bg-white text-black px-12 py-6 rounded-2xl font-black text-base tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-2xl active:scale-95"
+                >
                   COMEÇAR AGORA
                 </a>
               </div>
