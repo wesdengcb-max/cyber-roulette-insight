@@ -323,7 +323,12 @@ function Index() {
                   <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase leading-tight mb-6">Pronto para elevar sua <br /> <span className="text-primary">Experiência?</span></h2>
                   <p className="text-white/50 text-lg font-medium leading-relaxed">Junte-se a milhares de clientes e tenha acesso ao melhor conteúdo do mundo agora mesmo.</p>
                 </div>
-                <a href={WHATSAPP_LINK} className="flex-shrink-0 bg-white text-black px-12 py-6 rounded-2xl font-black text-base tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-2xl active:scale-95">
+                <a 
+                  href={WHATSAPP_LINK} 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 bg-white text-black px-12 py-6 rounded-2xl font-black text-base tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-2xl active:scale-95"
+                >
                   COMEÇAR AGORA
                 </a>
               </div>
