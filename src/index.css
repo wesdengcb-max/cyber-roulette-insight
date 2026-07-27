@@ -126,3 +126,17 @@
 .theme-jonbet video {
   filter: hue-rotate(-120deg) saturate(0.95);
 }
+
+/* remove Lovable e overlays externos */
+[class*="lovable"],
+[id*="lovable"],
+iframe[src*="lovable"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* remove overlays fixos suspeitos (mais específico) */
+body > div[style*="position: fixed"][style*="z-index"] {
+  display: none !important;
+}
